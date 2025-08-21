@@ -1,6 +1,6 @@
 # OpenList tvOS Framework
 
-🚀 **OpenList tvOS Framework** 是一個基於 [OpenList](https://github.com/OpenListTeam/OpenList) 項目的 tvOS 原生框架，為 Apple TV 提供完整的文件服務器功能。
+🚀 **OpenList tvOS Framework** 是一個基於 [OpenList v4](https://github.com/OpenListTeam/OpenList) 項目的 tvOS 原生框架，為 Apple TV 提供完整的文件服務器功能。
 
 ## ✨ 特性
 
@@ -8,17 +8,17 @@
 - 📱 **真設備 + 模擬器** - 支持 tvOS 真實設備和模擬器
 - 🔧 **完全自動化** - 一鍵構建和配置
 - 🏗️ **XCFramework** - 現代化的框架分發格式
-- 🔄 **持續更新** - 跟進 OpenList 最新版本
+- 🔄 **持續更新** - 包含最新 OpenList-Frontend
 
 ## 🎯 項目背景
 
-本項目將原 alist-ios 專案完全遷移到 **OpenList v4**，使用真正的 OpenList 源碼構建 tvOS 框架，而非依賴已被出售的 alist 項目。
+本項目將原 alist-ios 專案完全遷移到 **OpenList v4**，使用真正的 OpenList 源碼構建 tvOS 框架。
 
 ### 核心改進
 
-- ✅ **後端完全遷移** - 從 `github.com/alist-org/alist/v3` 遷移到 `github.com/OpenListTeam/OpenList/v4`
+- ✅ **後端完全遷移** - 從 `alist/v3` 遷移到 `OpenList/v4`
 - ✅ **前端完全遷移** - 從 `alist-web` 遷移到 `OpenList-Frontend`
-- ✅ **tvOS 原生支持** - 使用修改版 gomobile 支持 tvOS 平台
+- ✅ **tvOS 原生支持** - 使用 protonjohn/gomobile 支持 tvOS 平台
 - ✅ **兼容性修復** - 解決 gopsutil 等依賴庫的 tvOS 兼容性問題
 - ✅ **自動化構建** - 提供完整的自動化構建腳本
 
@@ -28,7 +28,7 @@
 
 - macOS (必需)
 - Xcode 14.0+
-- Go 1.21+
+- Go 1.22+
 
 ### 一鍵構建
 
@@ -37,38 +37,63 @@
 git clone <repository-url>
 cd alist-ios-tvos-shallow-framework
 
-# 構建 tvOS 框架
-./build_openlist_tvos.sh
+# 首次構建或環境重置
+./setup_and_build_tvos.sh
+
+# 日常構建
+./build_tvos_quick.sh
+
+# 包含前端更新的構建
+./build_tvos_quick.sh --update-web
 ```
 
 ## 📋 構建腳本說明
 
-### `build_openlist_tvos.sh` - 完整構建腳本
+### 🔧 主要腳本
 
-適用於首次配置或重新配置環境，包含：
+#### `setup_and_build_tvos.sh` - 完整環境設置
+**適用於**: 首次構建、全新環境、環境重置
 
-- ✅ 環境依賴檢查
-- ✅ 安裝支持 tvOS 的 gomobile (protonjohn 版本)
-- ✅ 自動配置 OpenList v4 依賴
-- ✅ 修復 gopsutil tvOS 兼容性
-- ✅ 構建 tvOS 淺層框架
-- ✅ 生成詳細構建報告
-- ✅ 自動化測試和驗證
+功能包括:
+- ✅ 檢查 Go 環境和版本 (需要 Go 1.22+)
+- ✅ 設置 Go 環境變量 (GOBIN, PATH)
+- ✅ 添加必要的 `golang.org/x/mobile` 依賴
+- ✅ 安裝 `protonjohn/gomobile` (支持 tvOS)
+- ✅ 更新前端資源 (OpenList-Frontend)
+- ✅ 驗證 gopsutil tvOS 支持
+- ✅ 構建 tvOS 框架
+- ✅ 驗證構建結果
+
+#### `build_tvos_quick.sh` - 日常快速構建
+**適用於**: 已配置環境的日常構建
+
+功能包括:
+- 🚀 快速環境檢查
+- 🔧 自動修復缺失的依賴
+- 🧹 清理舊框架
+- 🔨 構建 tvOS 框架
+- 📊 顯示構建結果
+
+### 🛠️ 輔助腳本
+
+- `fetch-web.sh` - 更新 OpenList-Frontend 前端資源
+- `cleanup.sh` - 清理項目中不必要的文件
 
 ## 🔧 技術架構
 
 ### 核心組件
 
 - **OpenList v4** - 主要的文件服務器核心
-- **protonjohn/gomobile** - 支持 tvOS 淺層框架的 Go 移動開發工具
+- **protonjohn/gomobile** - 支持 tvOS 的 Go 移動開發工具
 - **alistlib** - 封裝的 tvOS 原生接口層
+- **gendago/gopsutil** - 官方 tvOS 支持版本
 
 ### 框架結構
 
 ```
 Alistlib.xcframework/
 ├── Info.plist                           # 框架元數據
-├── tvos-arm64/                          # tvOS 設備版本
+├── tvos-arm64/                          # tvOS 設備版本 (ARM64)
 │   └── Alistlib.framework/
 │       ├── Alistlib                     # 二進制文件
 │       ├── Headers/                     # 頭文件
@@ -76,17 +101,26 @@ Alistlib.xcframework/
 │       │   ├── Alistlib.objc.h
 │       │   └── ref.h
 │       └── Modules/                     # 模塊映射
-└── tvos-arm64_x86_64-simulator/         # tvOS 模擬器版本
+└── tvos-arm64_x86_64-simulator/         # tvOS 模擬器版本 (ARM64 + x86_64)
     └── Alistlib.framework/
         └── ...
 ```
+
+### 技術規格
+
+- **架構**: tvOS 淺層框架結構 (Shallow Bundle)
+- **目標平台**: `appletvos`, `appletvsimulator`  
+- **工具鏈**: `protonjohn/gomobile` (支持 tvOS)
+- **Go 模組**: `golang.org/x/mobile@v0.0.0-20241213221354-a87c1cf6cf46`
+- **Bundle ID**: `com.openlist.tvos`
+- **框架大小**: ~408MB
 
 ## 🎯 Xcode 集成
 
 ### 1. 添加框架
 
 將 `Alistlib.xcframework` 拖入你的 Xcode 項目，並在：
-**General** → **Frameworks, Libraries, and Embedded Content** 中添加
+**General** → **Frameworks, Libraries, and Embedded Content** 中選擇 **Embed & Sign**
 
 ### 2. 導入頭文件
 
@@ -155,26 +189,41 @@ AlistlibShutdown(5000, &error); // 5秒超時
 
 ## 🔧 故障排除
 
+### 解決的關鍵問題
+
+#### 1. `golang.org/x/mobile/bind` 錯誤
+- **問題**: `no Go package in golang.org/x/mobile/bind`
+- **根本原因**: OpenList v4 項目缺少 `golang.org/x/mobile` 依賴
+- **解決方案**: 腳本自動添加正確版本依賴
+
+#### 2. gopsutil 函數重複聲明
+- **問題**: `VirtualMemory redeclared` 等 CGO/非CGO 函數衝突
+- **根本原因**: 構建標籤邏輯錯誤導致衝突
+- **解決方案**: 使用 gendago/gopsutil 官方 tvOS 支持版本
+
+#### 3. tvOS 平台支持
+- **工具**: protonjohn/gomobile fork 提供 tvOS 支援
+- **目標**: 正確的 `appletvos`, `appletvsimulator` 目標
+
 ### 常見問題
 
-1. **"no Go package in github.com/protonjohn/gomobile/bind"**
+1. **"gomobile 不支持 tvOS"**
    ```bash
-   go install github.com/protonjohn/gomobile/cmd/gomobile@latest
-   gomobile init
+   # 重新運行完整設置
+   ./setup_and_build_tvos.sh
    ```
 
-2. **"unsupported platform: appletvos"**
+2. **"golang.org/x/mobile/bind 找不到"**
    ```bash
-   # 確保使用 protonjohn 版本
-   go install github.com/protonjohn/gomobile/cmd/gomobile@latest
-   which gomobile  # 應該指向 Go bin 目錄
+   # 腳本會自動修復，或手動添加
+   go get golang.org/x/mobile@v0.0.0-20241213221354-a87c1cf6cf46
    ```
 
-3. **gopsutil 相關錯誤**
+3. **Go 版本過低**
    ```bash
-   # 檢查 build tag 修復是否應用
-   cat gopsutil/host/host_darwin_cgo.go | head -5
-   cat gopsutil/cpu/cpu_darwin_nocgo.go | head -5
+   # 檢查版本 (需要 Go 1.22+)
+   go version
+   # 請從 https://golang.org/dl/ 更新
    ```
 
 ### 調試技巧
@@ -226,18 +275,26 @@ go get github.com/OpenListTeam/OpenList/v4@latest
 go mod tidy
 
 # 重新構建
-./build_openlist_tvos.sh
+./build_tvos_quick.sh
 ```
 
-### 備份和恢復
+### 更新前端資源
 
 ```bash
-# 查看備份（腳本自動創建）
-ls go.mod.backup
+# 單獨更新前端
+./fetch-web.sh
 
-# 手動恢復
-mv go.mod.backup go.mod
+# 構建時自動更新前端
+./build_tvos_quick.sh --update-web
 ```
+
+## 🏆 成功案例
+
+✅ **測試環境**: macOS 14.x, Go 1.24.2, Xcode 26.0  
+✅ **構建時間**: 約 10-15 分鐘 (首次), 約 2-3 分鐘 (日常)  
+✅ **框架大小**: ~408MB  
+✅ **支援架構**: ARM64 (真機 + 模擬器)  
+✅ **自動化程度**: 100% 全自動構建
 
 ## 🤝 貢獻
 
@@ -258,10 +315,21 @@ mv go.mod.backup go.mod
 ## 🔗 相關鏈接
 
 - [OpenList 官方倉庫](https://github.com/OpenListTeam/OpenList)
+- [OpenList-Frontend](https://github.com/OpenListTeam/OpenList-Frontend)
 - [protonjohn/gomobile](https://github.com/protonjohn/gomobile)
+- [gendago/gopsutil tvOS 分支](https://github.com/gendago/gopsutil/tree/tvos)
 - [tvOS 開發文檔](https://developer.apple.com/tvos/)
-- [BUILD_GUIDE.md](./BUILD_GUIDE.md) - 詳細構建指南
 
 ---
+
+## 📝 更新歷史
+
+### v1.0 (2025-08-21)
+- ✅ 解決 golang.org/x/mobile/bind 錯誤
+- ✅ 修復 gopsutil 構建標籤衝突  
+- ✅ 整合 protonjohn/gomobile tvOS 支援
+- ✅ 提供完整的環境設置自動化
+- ✅ 升級到 gendago/gopsutil 官方 tvOS 支持
+- ✅ 添加前端資源自動更新
 
 **由 OpenList tvOS Framework 項目維護** 🚀

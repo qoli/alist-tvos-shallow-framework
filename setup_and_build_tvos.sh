@@ -154,6 +154,20 @@ install_protonjohn_gomobile() {
     fi
 }
 
+# 更新前端資源
+update_frontend_resources() {
+    log_step "更新前端資源..."
+    
+    if [[ -f "fetch-web.sh" ]]; then
+        log_info "執行前端資源更新..."
+        ./fetch-web.sh
+        log_success "✅ 前端資源更新完成"
+    else
+        log_warning "未找到 fetch-web.sh，跳過前端更新"
+        log_info "如需前端資源，請確保 fetch-web.sh 存在"
+    fi
+}
+
 # 驗證 gopsutil tvOS 支持
 verify_gopsutil_tvos_support() {
     log_step "驗證 gopsutil tvOS 支持..."
@@ -251,7 +265,7 @@ verify_build_result() {
 show_build_summary() {
     echo ""
     echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${CYAN}║                   構建完成總結                               ║${NC}"
+    echo -e "${CYAN}║                   構建完成總結                                 ║${NC}"
     echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     
@@ -270,6 +284,7 @@ show_build_summary() {
     log_info "   • 架構: tvOS 淺層框架結構 (Shallow Bundle)"
     log_info "   • 工具鏈: protonjohn/gomobile + Go $(go version | awk '{print $3}')"
     log_info "   • 目標平台: appletvos, appletvsimulator"
+    log_info "   • 前端資源: 已包含最新 OpenList-Frontend"
     
     echo ""
     log_info "🚀 使用方法:"
@@ -282,12 +297,12 @@ show_build_summary() {
 main() {
     echo -e "${CYAN}"
     echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║            OpenList tvOS 完整環境設置與構建腳本               ║"
+    echo "║            OpenList tvOS 完整環境設置與構建腳本                  ║"
     echo "║                                                              ║"
-    echo "║  🎯 目標: 自動化設置並構建 tvOS 框架                          ║"
-    echo "║  📦 輸出: Alistlib.xcframework (淺層結構)                     ║"
-    echo "║  🔧 工具: protonjohn/gomobile (tvOS 支持)                     ║"
-    echo "║  🚀 版本: 1.0                                                ║"
+    echo "║  🎯 目標: 自動化設置並構建 tvOS 框架                             ║"
+    echo "║  📦 輸出: Alistlib.xcframework (淺層結構)                      ║"
+    echo "║  🔧 工具: protonjohn/gomobile (tvOS 支持)                      ║"
+    echo "║  🚀 版本: 1.0                                                 ║"
     echo "╚══════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
     echo ""
@@ -298,6 +313,7 @@ main() {
     setup_go_environment
     add_mobile_dependency
     install_protonjohn_gomobile
+    update_frontend_resources
     verify_gopsutil_tvos_support
     build_tvos_framework
     verify_build_result
