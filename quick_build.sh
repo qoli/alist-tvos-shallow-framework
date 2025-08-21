@@ -17,7 +17,7 @@ if ! command -v gomobile &> /dev/null; then
 fi
 
 # 检查 tvOS 支持
-if ! gomobile bind -help 2>&1 | grep -q "tvos"; then
+if ! gomobile bind -help 2>&1 | grep -q "appletvos"; then
     echo "❌ gomobile 不支持 tvOS，请先运行完整构建脚本"
     exit 1
 fi
@@ -38,7 +38,7 @@ gomobile clean
 # 构建框架
 echo "🔨 构建 tvOS 框架..."
 gomobile bind \
-    -target tvos,tvossimulator \
+    -target appletvos,appletvsimulator \
     -bundleid com.openlist.tvos \
     -o ./Alistlib.xcframework \
     -ldflags "-s -w" \
@@ -52,5 +52,5 @@ echo ""
 # 显示框架信息
 if [ -d "Alistlib.xcframework" ]; then
     echo "🎯 支持平台:"
-    ls -la Alistlib.xcframework/ | grep "tvos" | sed 's/^/   /'
+    ls -la Alistlib.xcframework/ | grep -E "(tvos|arm64)" | sed 's/^/   /'
 fi
