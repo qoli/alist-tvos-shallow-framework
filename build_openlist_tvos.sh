@@ -157,23 +157,19 @@ install_protonjohn_gomobile() {
 
 # 添加 mobile 依賴
 add_mobile_dependency() {
-    log_step "添加 golang.org/x/mobile 依賴..."
+    log_step "清理和準備 Go 模塊..."
 
-    # 強制使用模組模式並設置代理，避免取包失敗或走 workspace
+    # 強制使用模組模式
     export GOWORK=off
     unset GOFLAGS
     export GOPROXY="https://proxy.golang.org,direct"
     
-    # 使用與原始成功版本相同的 x/mobile 版本
-    log_info "安裝與原始版本對齊的 golang.org/x/mobile..."
-    go get golang.org/x/mobile@v0.0.0-20241213221354-a87c1cf6cf46
+    # 清理和整理模塊
+    log_info "整理 Go 模塊..."
+    go mod tidy
+    go mod download
     
-    # === 保證 gobind 與 x/mobile 對齊 ===
-    X_MOBILE_VER="v0.0.0-20241213221354-a87c1cf6cf46"
-    echo "[INFO] 安裝 gobind@$X_MOBILE_VER 以對齊 x/mobile"
-    go install golang.org/x/mobile/cmd/gobind@"$X_MOBILE_VER"
-
-    log_success "✅ Mobile 依賴添加完成"
+    log_success "✅ 模塊準備完成"
 }
 
 # 修復 gopsutil 構建標籤以支持 iOS/tvOS
