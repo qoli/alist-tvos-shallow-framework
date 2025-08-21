@@ -57,13 +57,6 @@ show_banner() {
     echo -e "${NC}"
 }
 
-# === 保證 gobind 與 x/mobile 對齊（新增） ===
-export GOWORK=off
-unset GOFLAGS
-X_MOBILE_VER="$(go list -m -f '{{.Version}}' golang.org/x/mobile)"
-echo "[INFO] 安裝 gobind@$X_MOBILE_VER 以對齊 x/mobile"
-go install golang.org/x/mobile/cmd/gobind@"$X_MOBILE_VER"
-
 # 檢查依賴
 check_dependencies() {
     log_step "檢查構建環境依賴..."
@@ -135,7 +128,7 @@ install_protonjohn_gomobile() {
     log_info "編譯並安裝 gomobile 工具..."
     cd "$temp_dir"
     go install ./cmd/gomobile
-    go install ./cmd/gobind
+    # 不要在這裡安裝 fork 版本的 gobind；gobind 必須與 golang.org/x/mobile 版本對齊，由 add_mobile_dependency() 統一安裝
     cd - > /dev/null
     
     # 清理臨時目錄
@@ -144,7 +137,15 @@ install_protonjohn_gomobile() {
     # 初始化 gomobile
     log_info "初始化 gomobile..."
     gomobile init
-    
+
+    # 再次確認 tvOS 支持
+    if gomobile bind -help 2>&1 | grep -q "appletvos"; then
+        log_success "✅ protonjohn/gomobile 初始化完成，支持 appletvos 目標"
+    else
+        log_error "gomobile 初始化後不支持 appletvos"
+        exit 1
+    fi
+
     # 驗證 tvOS 支持
     if gomobile bind -help 2>&1 | grep -q "appletvos"; then
         log_success "✅ protonjohn/gomobile 安裝成功，支持 appletvos 目標"
@@ -157,10 +158,28 @@ install_protonjohn_gomobile() {
 # 添加 mobile 依賴
 add_mobile_dependency() {
     log_step "添加 golang.org/x/mobile 依賴..."
+
+    # 強制使用模組模式並設置代理，避免取包失敗或走 workspace
+    export GOWORK=off
+    unset GOFLAGS
+    export GOPROXY="https://proxy.golang.org,direct"
     
     # 添加 mobile 依賴以避免構建錯誤
     go get golang.org/x/mobile/bind
     
+    # === 保證 gobind 與 x/mobile 對齊（新增） ===
+    export GOWORK=off
+    unset GOFLAGS
+    X_MOBILE_VER="$(go list -m -f '{{.Version}}' golang.org/x/mobile)"
+    echo "[INFO] 安裝 gobind@$X_MOBILE_VER 以對齊 x/mobile"
+    go install golang.org/x/mobile/cmd/gobind@"$X_MOBILE_VER"
+
+    # 預檢：確認 gobind 能正確導入 x/mobile/bind
+    if ! gobind -lang=objc golang.org/x/mobile/bind >/dev/null 2>&1; then
+        log_error "gobind 無法導入 golang.org/x/mobile/bind，請檢查網路/模組版本對齊"
+        exit 1
+    fi
+
     log_success "✅ Mobile 依賴添加完成"
 }
 
@@ -233,6 +252,13 @@ prepare_build_environment() {
     # 清理 gomobile 緩存
     log_info "清理 gomobile 緩存..."
     gomobile clean || true
+
+    # 暫時禁用 vendor 以避免 gomobile 與 vendor 衝突（已知在 Go 1.22+ 會失敗）
+    if [ -d "vendor" ]; then
+        log_warning "偵測到 vendor/，bind 期間將暫時移走"
+        mv vendor vendor._off
+        export GOFLAGS="-mod=mod"
+    fi
     
     log_success "✅ 構建環境準備完成"
 }
@@ -443,6 +469,13 @@ cleanup_on_error() {
             log_info "已恢復 go.mod"
         fi
     fi
+
+    # 復原 vendor 目錄與 GOFLAGS（若有暫時移走）
+    if [ -d "vendor._off" ]; then
+        mv vendor._off vendor
+        unset GOFLAGS
+        log_info "已復原 vendor 目錄"
+    fi
 }
 
 # 主函數
@@ -469,6 +502,13 @@ main() {
     # 驗證和報告
     verify_build_result
     generate_detailed_build_report
+
+    # 構建成功後復原 vendor（若有）
+    if [ -d "vendor._off" ]; then
+        mv vendor._off vendor
+        unset GOFLAGS
+        log_info "已復原 vendor 目錄"
+    fi
     
     # 成功完成
     echo ""
