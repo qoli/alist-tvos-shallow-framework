@@ -9,6 +9,8 @@
 # 版本: 2.0
 # 更新: 基於 protonjohn/gomobile 和淺層框架結構
 
+
+
 set -e  # 遇到錯誤立即退出
 
 # 顏色定義
@@ -45,15 +47,22 @@ log_step() {
 show_banner() {
     echo -e "${CYAN}"
     echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║                OpenList tvOS Framework Builder              ║"
+    echo "║                OpenList tvOS Framework Builder               ║"
     echo "║                                                              ║"
     echo "║  🎯 Target: tvOS Shallow Bundle Structure                    ║"
-    echo "║  🔧 Tool: protonjohn/gomobile (tvOS support)                ║"
-    echo "║  📦 Output: Alistlib.xcframework                            ║"
-    echo "║  🚀 Version: 2.0 (Optimized)                               ║"
+    echo "║  🔧 Tool: protonjohn/gomobile (tvOS support)                 ║"
+    echo "║  📦 Output: Alistlib.xcframework                             ║"
+    echo "║  🚀 Version: 2.0 (Optimized)                                 ║"
     echo "╚══════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
 }
+
+# === 保證 gobind 與 x/mobile 對齊（新增） ===
+export GOWORK=off
+unset GOFLAGS
+X_MOBILE_VER="$(go list -m -f '{{.Version}}' golang.org/x/mobile)"
+echo "[INFO] 安裝 gobind@$X_MOBILE_VER 以對齊 x/mobile"
+go install golang.org/x/mobile/cmd/gobind@"$X_MOBILE_VER"
 
 # 檢查依賴
 check_dependencies() {
