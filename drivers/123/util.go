@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alist-org/alist/v3/drivers/base"
-	"github.com/alist-org/alist/v3/pkg/utils"
+	"github.com/OpenListTeam/OpenList/v4/drivers/base"
+	"github.com/OpenListTeam/OpenList/v4/pkg/utils"
 	resty "github.com/go-resty/resty/v2"
 	jsoniter "github.com/json-iterator/go"
 )

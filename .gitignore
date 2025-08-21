@@ -1,9 +1,20 @@
+# IDE and Editor files
 .idea/
-.DS_Store
-output/
-/dist/
+.vscode/
+*.swp
+*.swo
+*~
 
-# Binaries for programs and plugins
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+
+# Go build artifacts
 *.exe
 *.exe~
 *.dll
@@ -11,24 +22,74 @@ output/
 *.dylib
 *.db
 *.bin
-
-# Test binary, built with `go test -c`
 *.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Project build outputs
+output/
+/dist/
 /bin/*
-*.json
-/build
-/data/
+/build/
 /tmp/
 /log/
-/lang/
-/daemon/
-/public/dist/*
-/!public/dist/README.md
 
+# Framework build artifacts
+*.xcframework/
+*.framework/
+*.a
+*.o
+
+# Mobile development
+*.ipa
+*.apk
+*.aab
+
+# Dependency directories
+# vendor/
+
+# Runtime data
+/data/
+/daemon/
+
+# Web assets (keep source, ignore built)
+/public/dist/*
+!/public/dist/README.md
+/lang/
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# JSON configs (if containing sensitive data)
+# Uncomment if configs contain secrets
+# *.json
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# VSCode Counter
 .VSCodeCounter
+
+# Go module cache (local development)
+go.sum.backup
+go.mod.backup
+
+# Gomobile work directories
+gomobile-work-*/
+
+# Build scripts (keep these important files)
+!build_openlist_tvos.sh
+!cleanup.sh
+!fetch-web.sh
+!quick_build.sh
+!BUILD_GUIDE.md
+
+# XCFramework archives (optional - comment out if you want to commit built frameworks)
+Alistlib.xcframework/

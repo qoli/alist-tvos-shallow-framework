@@ -2,9 +2,9 @@ package tool
 
 import (
 	"context"
-	"github.com/alist-org/alist/v3/internal/conf"
-	"github.com/alist-org/alist/v3/internal/errs"
-	"github.com/alist-org/alist/v3/internal/op"
+	"github.com/OpenListTeam/OpenList/v4/internal/conf"
+	"github.com/OpenListTeam/OpenList/v4/internal/errs"
+	"github.com/OpenListTeam/OpenList/v4/internal/op"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/xhofe/tache"

@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alist-org/alist/v3/internal/stream"
+	"github.com/OpenListTeam/OpenList/v4/internal/stream"
 
-	"github.com/alist-org/alist/v3/internal/fs"
-	"github.com/alist-org/alist/v3/internal/model"
-	"github.com/alist-org/alist/v3/server/common"
+	"github.com/OpenListTeam/OpenList/v4/internal/fs"
+	"github.com/OpenListTeam/OpenList/v4/internal/model"
+	"github.com/OpenListTeam/OpenList/v4/server/common"
 	"github.com/gin-gonic/gin"
 )
 

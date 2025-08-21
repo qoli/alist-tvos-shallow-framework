@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/alist-org/alist/v3/drivers/base"
+	"github.com/OpenListTeam/OpenList/v4/drivers/base"
 	"github.com/go-resty/resty/v2"
 )
 

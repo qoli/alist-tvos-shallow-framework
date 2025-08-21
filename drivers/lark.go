@@ -4,5 +4,5 @@
 package drivers
 
 import (
-	_ "github.com/alist-org/alist/v3/drivers/lark"
+	_ "github.com/OpenListTeam/OpenList/v4/drivers/lark"
 )
