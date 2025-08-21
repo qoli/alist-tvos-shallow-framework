@@ -11,6 +11,9 @@
 
 set -e
 
+# 版本配置  
+MOBILE_VERSION="v0.0.0-20241213221354-a87c1cf6cf46"
+
 # 顏色定義
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -44,10 +47,11 @@ if ! gomobile bind -help 2>&1 | grep -q "appletvos"; then
     exit 1
 fi
 
-# 檢查 golang.org/x/mobile 依賴
-if ! go list -m golang.org/x/mobile 2>/dev/null | grep -q "v0.0.0-20241213221354-a87c1cf6cf46"; then
-    log_error "缺少 golang.org/x/mobile 依賴，請先運行完整設置腳本: ./setup_and_build_tvos.sh"
-    exit 1
+# 檢查並自動修復 golang.org/x/mobile 依賴
+if ! go list -m golang.org/x/mobile 2>/dev/null | grep -q "$MOBILE_VERSION"; then
+    log_info "🔧 自動添加缺失的 golang.org/x/mobile 依賴 ($MOBILE_VERSION)..."
+    go get golang.org/x/mobile@$MOBILE_VERSION
+    log_success "✅ golang.org/x/mobile 依賴已自動修復"
 fi
 
 # 更新前端（可選）

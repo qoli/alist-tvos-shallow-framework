@@ -107,11 +107,11 @@ add_mobile_dependency() {
     log_step "添加 golang.org/x/mobile 依賴..."
     
     # 檢查是否已有正確版本的依賴
-    if go list -m golang.org/x/mobile 2>/dev/null | grep -q "v0.0.0-20241213221354-a87c1cf6cf46"; then
-        log_info "golang.org/x/mobile 依賴已存在且版本正確"
+    if go list -m golang.org/x/mobile 2>/dev/null | grep -q "$MOBILE_VERSION"; then
+        log_info "golang.org/x/mobile 依賴已存在且版本正確 ($MOBILE_VERSION)"
     else
-        log_info "添加 golang.org/x/mobile 依賴..."
-        go get golang.org/x/mobile@v0.0.0-20241213221354-a87c1cf6cf46
+        log_info "添加 golang.org/x/mobile 依賴 ($MOBILE_VERSION)..."
+        go get golang.org/x/mobile@$MOBILE_VERSION
         log_success "✅ golang.org/x/mobile 依賴添加完成"
     fi
 }
@@ -128,8 +128,8 @@ install_protonjohn_gomobile() {
     
     local temp_dir="/tmp/protonjohn-gomobile-$(date +%s)"
     
-    log_info "下載 protonjohn/gomobile fork..."
-    git clone -b pr/jkb/add-tvos-xros-support https://github.com/protonjohn/gomobile.git "$temp_dir"
+    log_info "下載 protonjohn/gomobile fork ($GOMOBILE_BRANCH)..."
+    git clone -b "$GOMOBILE_BRANCH" "$GOMOBILE_REPO" "$temp_dir"
     
     cd "$temp_dir"
     
@@ -303,6 +303,11 @@ main() {
     verify_build_result
     show_build_summary
 }
+
+# 版本配置
+MOBILE_VERSION="v0.0.0-20241213221354-a87c1cf6cf46"
+GOMOBILE_REPO="https://github.com/protonjohn/gomobile.git"
+GOMOBILE_BRANCH="pr/jkb/add-tvos-xros-support"
 
 # 錯誤處理
 trap 'log_error "腳本執行失敗，請檢查上面的錯誤信息"; exit 1' ERR
