@@ -164,51 +164,34 @@ add_mobile_dependency() {
     unset GOFLAGS
     export GOPROXY="https://proxy.golang.org,direct"
     
-    # 添加 mobile 依賴以避免構建錯誤
-    go get golang.org/x/mobile/bind
+    # 使用與原始成功版本相同的 x/mobile 版本
+    log_info "安裝與原始版本對齊的 golang.org/x/mobile..."
+    go get golang.org/x/mobile@v0.0.0-20241213221354-a87c1cf6cf46
     
-    # === 保證 gobind 與 x/mobile 對齊（新增） ===
-    export GOWORK=off
-    unset GOFLAGS
-    X_MOBILE_VER="$(go list -m -f '{{.Version}}' golang.org/x/mobile)"
+    # === 保證 gobind 與 x/mobile 對齊 ===
+    X_MOBILE_VER="v0.0.0-20241213221354-a87c1cf6cf46"
     echo "[INFO] 安裝 gobind@$X_MOBILE_VER 以對齊 x/mobile"
     go install golang.org/x/mobile/cmd/gobind@"$X_MOBILE_VER"
-
-    # 預檢：確認 gobind 能正確導入 x/mobile/bind
-    if ! gobind -lang=objc golang.org/x/mobile/bind >/dev/null 2>&1; then
-        log_error "gobind 無法導入 golang.org/x/mobile/bind，請檢查網路/模組版本對齊"
-        exit 1
-    fi
 
     log_success "✅ Mobile 依賴添加完成"
 }
 
 # 修復 gopsutil 構建標籤以支持 iOS/tvOS
 fix_gopsutil_build_tags() {
-    log_step "修復 gopsutil 構建標籤以支持 iOS/tvOS..."
+    log_step "檢查 gopsutil 構建標籤..."
     
-    # 更新所有 Darwin CGO 文件以排除 iOS
-    log_info "更新 Darwin CGO 文件構建標籤..."
-    find ./gopsutil -name "*darwin*cgo.go" -exec sed -i '' \
-        's|//go:build darwin && cgo|//go:build darwin \&\& cgo \&\& !ios|g' {} \;
-    find ./gopsutil -name "*darwin*cgo.go" -exec sed -i '' \
-        's|// +build darwin,cgo|// +build darwin,cgo,!ios|g' {} \;
+    # 檢查是否已經修復過
+    if grep -q "!appletvos && !appletvsimulator" gopsutil/host/host_darwin_cgo.go 2>/dev/null; then
+        log_info "gopsutil 構建標籤已經正確配置，跳過修復"
+        return 0
+    fi
     
-    # 更新所有 Darwin NOCGO 文件以在 iOS 標籤時激活
-    log_info "更新 Darwin NOCGO 文件構建標籤..."
-    find ./gopsutil -name "*darwin*nocgo.go" -exec sed -i '' \
-        's|//go:build darwin && !cgo|//go:build darwin \&\& (!cgo \|\| ios)|g' {} \;
-    find ./gopsutil -name "*darwin*nocgo.go" -exec sed -i '' \
-        's|// +build darwin,!cgo|// +build darwin,!cgo darwin,ios|g' {} \;
+    log_info "應用正確的 tvOS 構建標籤..."
     
-    # 清理重複的構建標籤
-    find ./gopsutil -name "*.go" -exec sed -i '' 's|darwin,ios darwin,ios|darwin,ios|g' {} \;
-    
-    # 確保有 tvOS 特定的 host 文件
-    local tvos_host_file="gopsutil/host/host_darwin_tvos.go"
-    if [ ! -f "$tvos_host_file" ]; then
-        log_info "創建 tvOS 特定的 host 文件..."
-        cat > "$tvos_host_file" << 'EOF'
+    # 確保有正確的 host_appletvos.go 文件
+    if [ ! -f "gopsutil/host/host_appletvos.go" ]; then
+        log_info "創建 host_appletvos.go..."
+        cat > "gopsutil/host/host_appletvos.go" << 'EOF'
 //go:build darwin && ios
 // +build darwin,ios
 
@@ -226,13 +209,13 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 EOF
     fi
     
-    # 確保沒有重複的函數定義
-    if [ -f "gopsutil/host/host_appletvos.go" ]; then
-        log_info "刪除重複的 host_appletvos.go 文件..."
-        rm "gopsutil/host/host_appletvos.go"
+    # 刪除錯誤的文件（如果存在）
+    if [ -f "gopsutil/host/host_darwin_tvos.go" ]; then
+        log_info "刪除錯誤的 host_darwin_tvos.go..."
+        rm "gopsutil/host/host_darwin_tvos.go"
     fi
     
-    log_success "✅ gopsutil 構建標籤修復完成"
+    log_success "✅ gopsutil 構建標籤檢查完成"
 }
 
 # 清理和準備構建
